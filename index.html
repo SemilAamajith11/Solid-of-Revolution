@@ -313,15 +313,21 @@ footer {
       </div>
 
       <div class="display-card" id="threeCard" style="display:none;">
-        <div class="display-top">
-          <div class="badge">3D Solid</div>
-          <div style="width:10px"></div>
-          <div class="muted">Revolve around <span id="axisLabel">x-axis</span></div>
-        </div>
-        <div id="three-root" style="width:100%; height:100%; position:relative;">
-          <canvas id="three-canvas"></canvas>
-        </div>
-      </div>
+  <div class="display-top">
+  <div class="badge">3D Solid</div>
+  <div style="width:10px"></div>
+  <div class="muted">Revolve around <span id="axisLabel">x-axis</span></div>
+  <button id="fullscreen3D"
+    style="margin-left:auto; background:none; border:none; color:#7dd3fc; cursor:pointer; font-size:14px;">
+    ⛶ Fullscreen
+  </button>
+</div>
+
+  <div id="three-root" style="width:100%; height:100%; position:relative;">
+    <canvas id="three-canvas"></canvas>
+  </div>
+</div>
+
 
       <div class="bottom-stats">
         <div class="stat"><strong>Function</strong><br><span id="fnText" class="math">y = x²</span></div>
@@ -818,6 +824,43 @@ spinToggle.addEventListener('click', () => {
   fitCanvas();
   drawAll();
 })();
+
+const fullscreenBtn = document.getElementById('fullscreen3D');
+
+fullscreenBtn.addEventListener('click', () => {
+  const threeRoot = document.getElementById('three-root');
+  
+  if (!document.fullscreenElement) {
+    // Enter fullscreen
+    if (threeRoot.requestFullscreen) {
+      threeRoot.requestFullscreen();
+    } else if (threeRoot.webkitRequestFullscreen) { // Safari
+      threeRoot.webkitRequestFullscreen();
+    }
+  } else {
+    // Exit fullscreen
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+  }
+});
+
+// When fullscreen changes, update button text and resize Three.js
+function handleFullscreenChange() {
+  if (document.fullscreenElement) {
+    fullscreenBtn.textContent = '✖ Exit';
+  } else {
+    fullscreenBtn.textContent = '⛶ Fullscreen';
+  }
+  onWindowResizeThree();
+}
+
+document.addEventListener('fullscreenchange', handleFullscreenChange);
+document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+
 </script>
 
 <footer>Developed by: Semila Amajith</footer>
