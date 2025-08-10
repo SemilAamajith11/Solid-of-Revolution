@@ -259,6 +259,16 @@ footer {
         <option value="0.5x">y = 0.5x</option>
       </select>
 
+      <!-- Custom function input (hidden by default) -->
+<div id="customFnContainer" style="margin-top:10px; display:none;">
+  <label for="customFnInput">Enter function f(x):</label>
+  <input id="customFnInput" type="text" placeholder="e.g. x*x + 2*x" style="width:100%;" />
+  <div class="muted" style="margin-top:4px;">
+    You can use Math functions like <code>Math.sin(x)</code>, <code>Math.exp(x)</code>, etc.
+  </div>
+</div>
+
+
       <div class="row" style="margin-top:12px">
         <div style="flex:1">
           <label for="aInput">a (start)</label>
@@ -299,7 +309,13 @@ footer {
       <div style="margin-top:14px;">
         <div class="muted">Tip: try `y = √x` on [0,2] or `y = sin(x)` on [0,π].</div>
       </div>
+
+      <div id="customFnContainer" style="margin-top:10px; display:none;">
+  <label for="customFnInput">Enter function f(x):</label>
+  <input id="customFnInput" type="text" placeholder="e.g. x*x + 2*x" />
+  <div class="muted" style="margin-top:4px;">You can use Math functions like <code>Math.sin(x)</code>, <code>Math.exp(x)</code>, etc.</div>
     </div>
+  </div>
 
     <!-- Display area -->
     <div class="canvas-area">
@@ -386,7 +402,13 @@ const presets = {
     label: "y = e^x",
     f: x => Math.exp(x),
     suggested: {a: -1, b: 1}
+  },
+  "custom": {
+  label: "Custom (type below)",
+  f: x => 0, // default until user types something
+  suggested: {a: 0, b: 1}
   }
+
 };
 
 
@@ -616,8 +638,26 @@ function updateControlsFromPreset(){
 
 fnSelect.addEventListener('change', () => {
   updateControlsFromPreset();
+  // Show input only if "custom" is selected
+  document.getElementById('customFnContainer').style.display = 
+      (fnSelect.value === 'custom') ? 'block' : 'none';
   drawAll();
 });
+
+const customFnInput = document.getElementById('customFnInput');
+customFnInput.addEventListener('input', () => {
+  if (fnSelect.value === 'custom') {
+    try {
+      // Compile user input into a function f(x)
+      const expr = customFnInput.value;
+      presets.custom.f = new Function("x", `with (Math) { return ${expr}; }`);
+      drawAll();
+    } catch (err) {
+      // Invalid expression — do nothing
+    }
+  }
+});
+
 
 aInput.addEventListener('change', drawAll);
 bInput.addEventListener('change', drawAll);
