@@ -38,17 +38,55 @@
 
 /* Footer Styles */
 footer {
-    text-align: center;
-    padding: 10px;
-    background: #0d0d0d;
+    background: linear-gradient(180deg, #0d0d0d, #071018);
+    padding: 20px 10px;
     border-top: 1px solid #333;
-    position: fixed;
+    color: #aaa;
+    font-family: 'Times New Roman', serif;
+    font-style: normal;
+    position: relative;
     bottom: 0;
     width: 100%;
-    color: #888;
-    font-style: italic;
-    font-family: 'Times New Roman', serif;
 }
+
+.footer-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.footer-section {
+    flex: 1;
+    min-width: 200px;
+}
+
+.footer-section h4 {
+    margin-bottom: 8px;
+    color: #60a5fa;
+    font-size: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 4px;
+}
+
+.footer-section p {
+    margin: 4px 0;
+    font-size: 13px;
+    color: #888;
+}
+
+.footer-section a {
+    color: #7dd3fc;
+    text-decoration: none;
+}
+
+.footer-section a:hover {
+    text-decoration: underline;
+}
+
+
 
   :root{
     --bg:#0b0f14;
@@ -903,7 +941,36 @@ document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
 
 </script>
 
-<footer>Developed by: Semila Amajith</footer>
+<footer>
+  <div class="footer-container">
+    <div class="footer-section">
+      <h4>About</h4>
+      <p>A tool to visualize solids of revolution in 2D & 3D using modern web tech.</p>
+    </div>
+    <div class="footer-section">
+      <h4>Contact</h4>
+      <p>Email: <a href="mailto:you@example.com">semila.info@gmail.com</a></p>
+      <p>GitHub: <a href="https://github.com/SemilAamajith11" target="_blank">SemilAamajith11</a></p>
+    </div>
+    <div class="footer-section">
+      <h4>Info</h4>
+      <p>Version: v1.0</p>
+      <p>© <span id="year"></span> Semila Amajith</p>
+      <p><strong>Time:</strong> <span id="dateTime"></span></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.getElementById("year").textContent = new Date().getFullYear();
+
+function updateDateTime() {
+  document.getElementById("dateTime").textContent =
+    new Date().toLocaleString();
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
+</script>
 
 </body>
 </html>
