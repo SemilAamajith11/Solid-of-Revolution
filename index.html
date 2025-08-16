@@ -1,977 +1,806 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Solid of Revolutio</title>
+  <meta charset="UTF-8" />
+  <title>Solid of Revolution — v2.0</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<!-- Three.js CDN -->
-<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 
-<style>
+  <!-- Plotly for 2D/3D plots -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 
-/* Loading Screen Styles */
-#loadingScreen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #121212; /* Match dark theme */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-}
+  <!-- Math.js for parsing/evaluating functions -->
+  <script src="https://cdn.jsdelivr.net/npm/mathjs@11.11.1/lib/browser/math.js"></script>
 
-#loadingScreen img {
-    width: 80px;
-    height: 80px;
-    margin-bottom: 20px;
-}
+  <!-- MathJax for pretty math (optional but nice) -->
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-#loadingScreen span {
-    font-size: 1.5em;
-    color: #60a5fa;
-}
+  <style>
+    :root{
+      --bg: #0b0f19;
+      --panel: #0e1425;
+      --panel-2: #0c1222;
+      --text: #e6ebf5;
+      --muted: #a8b3cf;
+      --accent: #64d2ff;
+      --accent-2: #c778ff;
+      --accent-3: #7ef29a;
+      --danger: #ff6b6b;
+      --grid: #202a44;
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 14px;
+    }
+    *{box-sizing: border-box}
+    html, body { height: 100% }
+    body{
+      margin: 0;
+      background: radial-gradient(1200px 800px at 20% -10%, #121a33 0%, #0b0f19 50%) no-repeat, var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      letter-spacing: 0.1px;
+    }
 
-/* Footer Styles */
-footer {
-    background: linear-gradient(180deg, #0d0d0d, #071018);
-    padding: 20px 10px;
-    border-top: 1px solid #333;
-    color: #aaa;
-    font-family: 'Times New Roman', serif;
-    font-style: normal;
-    position: relative;
-    bottom: 0;
-    width: 100%;
-}
+    header{
+      padding: 22px 24px 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header .brand{
+      display:flex; align-items:center; gap:12px;
+    }
+    .logo{
+      width: 38px; height: 38px; border-radius: 12px;
+      background: conic-gradient(from 220deg at 50% 50%, var(--accent), var(--accent-2), var(--accent-3), var(--accent));
+      filter: saturate(120%) brightness(0.95);
+      box-shadow: inset 0 0 20px rgba(255,255,255,0.12), 0 8px 30px rgba(100,210,255,0.18);
+    }
+    h1{
+      font-size: 20px; margin:0; font-weight:700; letter-spacing:0.3px;
+    }
+    .subtitle{
+      color: var(--muted); font-size: 13px; margin-top: 2px;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+    }
 
-.footer-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    gap: 20px;
-    max-width: 1000px;
-    margin: 0 auto;
-}
+    .container{
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+      padding: 10px 20px 22px 20px;
+    }
+    @media (max-width: 1024px){
+      .container{ grid-template-columns: 1fr; }
+    }
 
-.footer-section {
-    flex: 1;
-    min-width: 200px;
-}
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent), var(--panel);
+      border: 1px solid #101938;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .panel-header{
+      padding: 16px 16px 8px 16px; border-bottom: 1px solid #121b3a;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .panel-title{ font-weight: 700; letter-spacing: 0.25px; }
+    .panel-body{ padding: 14px 16px 16px 16px; }
 
-.footer-section h4 {
-    margin-bottom: 8px;
-    color: #60a5fa;
-    font-size: 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding-bottom: 4px;
-}
+    .controls{
+      display:grid; gap: 14px;
+    }
+    .row{
+      display: grid; gap: 12px;
+    }
+    .row.two{
+      grid-template-columns: 1fr 1fr;
+    }
+    label{ font-size: 13px; color: var(--muted); margin-bottom: 6px; display:block; }
+    select, input[type="text"], input[type="number"]{
+      width: 100%;
+      background: var(--panel-2); color: var(--text);
+      border: 1px solid #172146; border-radius: 12px;
+      font-size: 14px;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, transform .05s;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+    }
+    select:focus, input:focus{
+      border-color: #2449ff8a;
+      box-shadow: 0 0 0 6px rgba(46,120,255,0.12);
+    }
+    .hint{
+      font-size: 12px; color: var(--muted);
+      margin-top: 6px;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+    }
 
-.footer-section p {
-    margin: 4px 0;
-    font-size: 13px;
-    color: #888;
-}
+    .axis-options{
+      display:flex; gap: 10px; flex-wrap:wrap;
+    }
+    .chip{
+      display:inline-flex; align-items:center; gap:8px; padding:8px 12px;
+      background: #0f1936; border: 1px solid #172146; border-radius: 999px;
+      cursor: pointer; user-select: none;
+      transition: all .2s;
+    }
+    .chip input{ display:none }
+    .chip.active{
+      background: linear-gradient(180deg, rgba(100,210,255,0.1), rgba(199,120,255,0.05));
+      border-color: #2b4fb9;
+      box-shadow: inset 0 0 0 1px rgba(100,210,255,0.12);
+    }
 
-.footer-section a {
-    color: #7dd3fc;
-    text-decoration: none;
-}
+    .btns{ display:flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+    button{
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border: 1px solid #1a2450; color: var(--text);
+      border-radius: 12px; padding: 10px 14px; font-weight:600;
+      cursor: pointer; transition: transform .06s ease, box-shadow .2s, border-color .2s;
+    }
+    button:hover{ border-color: #2b4fb9; box-shadow: 0 8px 24px rgba(32,64,190,0.2);}
+    button:active{ transform: translateY(1px) scale(0.995); }
+    .btn-primary{
+      background: linear-gradient(180deg, rgba(100,210,255,0.16), rgba(199,120,255,0.1));
+      border-color: #2b4fb9;
+    }
+    .btn-ghost{ background: transparent; }
+    .btn-danger{ border-color: #442027; background: linear-gradient(180deg, rgba(255,107,107,0.12), rgba(255,107,107,0.06)); }
 
-.footer-section a:hover {
-    text-decoration: underline;
-}
+    .plots{
+      display: grid; gap: 16px;
+      grid-template-rows: 360px auto;
+      padding: 12px;
+    }
 
+    #plot2d, #plot3d{ width: 100%; height: 100%; }
 
+    .plot-panel{ position: relative; overflow: hidden; }
+    .plot-panel .toolbar{
+      position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 3;
+    }
+    .badge{
+      background: #0f1936; border: 1px solid #172146; padding: 6px 10px; border-radius: 999px; font-size: 12px; color: var(--muted);
+    }
 
-  :root{
-    --bg:#0b0f14;
-    --panel:#0f1720;
-    --muted:#9aa6b2;
-    --accent:#7dd3fc;
-    --accent-2:#60a5fa;
-    --glow: rgba(125,211,252,0.12);
-    --card:#0c1318;
-    --mono: "Fira Mono", "Roboto Mono", monospace;
-  }
+    .volume-box{
+      display:flex; align-items:center; justify-content:space-between; gap: 10px;
+      padding: 12px 12px; margin-top:8px;
+      border: 1px dashed #27325d; border-radius: 12px;
+      background: linear-gradient(180deg, rgba(100,210,255,0.08), rgba(199,120,255,0.06));
+    }
+    .volume-value{ font-size: 18px; font-weight: 700; color: var(--accent-3); font-family: "JetBrains Mono", monospace; }
+    .formula{ color: var(--muted); font-size: 13px; }
 
-  html,body{
-    height:100%;
-    margin:0;
-    background:linear-gradient(180deg,#071018 0%, #07111b 60%);
-    color:#e6eef6;
-    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-  }
+    .footer{
+      margin: 14px 20px 24px; padding: 14px 16px;
+      border: 1px solid #101938; border-radius: 12px; background: var(--panel);
+      display:flex; flex-wrap:wrap; gap: 12px; align-items:center; justify-content: space-between;
+    }
+    .contact{ display:flex; gap: 10px; align-items:center; }
+    .contact a{ color: var(--accent); text-decoration: none; }
+    .clock{ color: var(--muted); font-family: "JetBrains Mono", monospace; }
 
-  .wrap{
-    max-width:1200px;
-    margin:28px auto;
-    display:grid;
-    grid-template-columns: 420px 1fr;
-    gap:20px;
-    padding:20px;
-  }
+    /* Loading overlay */
+    .loader{
+      position: fixed; inset: 0; z-index: 9999;
+      background: radial-gradient(800px 500px at 20% 10%, #121a33 0%, #0b0f19 50%) no-repeat, var(--bg);
+      display:flex; align-items:center; justify-content:center;
+      flex-direction:column; gap: 18px;
+      color: var(--text);
+      transition: opacity .4s ease, visibility .4s ease;
+    }
+    .loader.hidden{ opacity: 0; visibility: hidden; }
+    .spinner{
+      width: 72px; height: 72px; border-radius: 50%;
+      border: 6px solid rgba(100,210,255,0.15);
+      border-top-color: var(--accent); border-right-color: var(--accent-2);
+      animation: spin 1s linear infinite;
+      box-shadow: 0 0 60px rgba(100,210,255,0.15), 0 0 40px rgba(199,120,255,0.12) inset;
+    }
+    @keyframes spin { to { transform: rotate(360deg) } }
+    .loader .tip{
+      font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--muted);
+      opacity: 0.9;
+    }
 
-  .panel{
-    background:linear-gradient(180deg,var(--panel), rgba(6,10,13,0.6));
-    border-radius:12px;
-    padding:18px;
-    box-shadow: 0 6px 30px rgba(2,6,10,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
-    border: 1px solid rgba(125,211,252,0.06);
-  }
+    /* Expandable 3D palette */
+    .plot3d-container{
+      position: relative; height: 460px;
+      border: 1px solid #101938; border-radius: var(--radius);
+      background: var(--panel);
+      transition: all .35s ease;
+    }
+    .plot3d-container.expanded{
+      position: fixed; inset: 12px; z-index: 50;
+      border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+      backdrop-filter: blur(2px);
+    }
+    .plot3d-container .actions{
+      position: absolute; right: 10px; top: 10px; display:flex; gap: 8px; z-index: 5;
+    }
+    .muted{ color: var(--muted); }
 
-  h1{
-    margin:0 0 12px 0;
-    font-size:18px;
-    letter-spacing:0.4px;
-  }
-  .muted { color:var(--muted); font-size:13px; margin-top:6px; }
+    .error{
+      margin-top: 8px; font-size: 13px; color: var(--danger);
+      font-family: "JetBrains Mono", monospace;
+    }
 
-  label{ display:block; margin:12px 0 6px; font-weight:600; font-size:13px; color:#cfeafe; }
-  select, input[type="number"]{
-    width:100%;
-    background:transparent;
-    border:1px solid rgba(255,255,255,0.06);
-    padding:8px 10px;
-    border-radius:8px;
-    color:var(--muted);
-    font-family:var(--mono);
-    font-size:13px;
-    outline:none;
-  }
+    /* Subtle glow on hover elements */
+    .glow:hover{ box-shadow: 0 0 0 4px rgba(100,210,255,0.12); }
 
-  .row { display:flex; gap:10px; align-items:center; }
-  .small { flex:1; }
-
-  .btn {
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:10px 14px;
-    background:linear-gradient(180deg,var(--accent-2), var(--accent));
-    color:#042033;
-    border:none;
-    border-radius:10px;
-    font-weight:700;
-    cursor:pointer;
-    box-shadow: 0 6px 20px rgba(96,165,250,0.14), 0 0 24px rgba(125,211,252,0.04) inset;
-    transition:transform .14s ease, box-shadow .14s;
-  }
-  .btn:active{ transform:translateY(1px) }
-
-  .toggle {
-    background: linear-gradient(180deg,#0b1116,#071018);
-    border: 1px solid rgba(255,255,255,0.04);
-    padding:8px;
-    border-radius:10px;
-    display:inline-flex;
-    gap:8px;
-    align-items:center;
-  }
-
-  .info {
-    margin-top:12px;
-    padding:10px;
-    border-radius:8px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
-    border:1px solid rgba(255,255,255,0.02);
-    font-family:var(--mono);
-    color:var(--muted);
-    font-size:13px;
-  }
-
-  /* Canvas containers */
-  .canvas-area{
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-    height: calc(100vh - 120px);
-  }
-
-  .display-card{
-    flex:1;
-    background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
-    border-radius:12px;
-    overflow:hidden;
-    position:relative;
-    border:1px solid rgba(255,255,255,0.03);
-  }
-
-  /* top bar inside display */
-  .display-top{
-    position:absolute;
-    top:12px;
-    left:12px;
-    z-index:6;
-    display:flex;
-    gap:8px;
-    align-items:center;
-    background:rgba(2,6,10,0.35);
-    padding:8px;
-    border-radius:10px;
-    border:1px solid rgba(255,255,255,0.03);
-    backdrop-filter: blur(4px);
-  }
-
-  .badge{
-    font-family:var(--mono);
-    background: linear-gradient(90deg,#072a3b, #06314a);
-    padding:6px 10px;
-    border-radius:8px;
-    font-weight:700;
-    color:var(--accent);
-    border:1px solid rgba(125,211,252,0.06);
-    font-size:13px;
-  }
-
-  canvas#plot2d{
-    width:100%;
-    height:100%;
-    display:block;
-  }
-
-  #three-canvas{
-    width:100%;
-    height:100%;
-    display:block;
-  }
-
-  .bottom-stats{
-    display:flex;
-    gap:12px;
-    padding:12px;
-    align-items:center;
-  }
-
-  .stat{
-    padding:10px 12px;
-    background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
-    border-radius:10px;
-    font-family:var(--mono);
-    color:var(--muted);
-    font-size:13px;
-    border:1px solid rgba(255,255,255,0.02);
-  }
-
-  .math {
-    font-family: var(--mono);
-    color:#dff8ff;
-    background: linear-gradient(90deg, rgba(125,211,252,0.04), transparent);
-    padding:6px 8px;
-    border-radius:6px;
-    border:1px solid rgba(125,211,252,0.04);
-  }
-
-  /* responsive */
-  @media (max-width:980px){
-    .wrap{ grid-template-columns: 1fr; padding:14px; }
-    .canvas-area{ height: 60vh; }
-  }
-
-</style>
+    /* Tiny helper grid for plot backgrounds via Plotly layout */
+  </style>
 </head>
+
 <body>
+  <!-- Loading overlay -->
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+    <div class="tip">Loading…</div>
+  </div>
 
-<!-- Loading Screen -->
-<div id="loadingScreen">
-    <img src="loading.gif" alt="Loading...">
-    <span>Loading...</span>
-</div>
+  <header>
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>Solid of Revolution — Visualizer</h1>
+        <div class="subtitle">Plot. Rotate. Understand. ✨</div>
+      </div>
+    </div>
+  </header>
 
-  <div class="wrap">
-    <!-- Control panel -->
+  <div class="container">
+    <!-- Controls -->
     <div class="panel">
-      <h1>Solid of Revolution</h1>
-      <div class="muted">Pick a preset function, set limits, then toggle 3D.</div>
+      <div class="panel-header">
+        <div class="panel-title">Controls</div>
+        <span class="badge">© 2025 Semila Amajith</span>
+      </div>
+      <div class="panel-body">
+        <div class="controls">
 
-      <label for="fnSelect">Preset function</label>
-      <select id="fnSelect">
-        <option value="x^2">y = x²</option>
-        <option value="sqrt">y = √x</option>
-        <option value="sin">y = sin(x)</option>
-        <option value="0.5x">y = 0.5x</option>
-      </select>
+          <div class="row">
+            <label>Function f(x)</label>
+            <select id="preset">
+              <option value="x^2">x^2</option>
+              <option value="sin(x)">sin(x)</option>
+              <option value="cos(x)">cos(x)</option>
+              <option value="exp(x)">e^x</option>
+              <option value="abs(x)">|x|</option>
+              <option value="sqrt(x)">sqrt(x)</option>
+              <option value="1/x">1/x</option>
+              <option value="custom">Custom…</option>
+            </select>
+            <input id="customFn" type="text" placeholder="Type custom expression, e.g. exp(-x^2) * cos(3x)" disabled />
+            <div class="hint">sin, cos, tan, exp, log, sqrt, abs, ^ for power. Variable is x.</div>
+          </div>
 
-      <!-- Custom function input (hidden by default) -->
-<div id="customFnContainer" style="margin-top:10px; display:none;">
-  <label for="customFnInput">Enter function f(x):</label>
-  <input id="customFnInput" type="text" placeholder="e.g. x*x + 2*x" style="width:100%;" />
-  <div class="muted" style="margin-top:4px;">
-    You can use Math functions like <code>Math.sin(x)</code>, <code>Math.exp(x)</code>, etc.
-  </div>
-</div>
+          <div class="row two">
+            <div>
+              <label>Lower limit a</label>
+              <input id="a" type="number" step="any" value="0" />
+            </div>
+            <div>
+              <label>Upper limit b</label>
+              <input id="b" type="number" step="any" value="2" />
+            </div>
+          </div>
 
+          <div class="row">
+            <label>Axis of Revolution</label>
+            <div class="axis-options">
+              <label class="chip active" id="chip-x">
+                <input type="radio" name="axis" value="x" checked />
+                Around x-axis (y = 0)
+              </label>
+              <label class="chip" id="chip-y">
+                <input type="radio" name="axis" value="y" />
+                Around y-axis (x = 0)
+              </label>
+            </div>
+          </div>
 
-      <div class="row" style="margin-top:12px">
-        <div style="flex:1">
-          <label for="aInput">a (start)</label>
-          <input id="aInput" type="number" step="0.01" value="0" />
+          <div class="row">
+            <div class="btns">
+              <button id="updateBtn" class="btn-primary glow">Update Plot</button>
+              <button id="animateBtn" class="glow">Animate Rotation</button>
+              <button id="toggle3DBtn" class="glow">Toggle 3D View</button>
+              <button id="resetBtn" class="btn-ghost">Reset</button>
+            </div>
+            <div id="error" class="error" style="display:none;"></div>
+          </div>
+
+          <div class="row">
+            <div class="volume-box">
+              <div>
+                <div class="formula" id="formula">(formula appears here)</div>
+                <div class="hint">We use washers for x-axis and cylindrical shells for y-axis.</div>
+              </div>
+              <div class="volume-value" id="volumeValue">—</div>
+            </div>
+          </div>
+
         </div>
-        <div style="flex:1">
-          <label for="bInput">b (end)</label>
-          <input id="bInput" type="number" step="0.01" value="2" />
-        </div>
       </div>
-
-      <label style="margin-top:14px">Axis of revolution</label>
-      <div class="row">
-        <div class="toggle">
-          <input id="axisX" type="radio" name="axis" value="x" checked /> <label for="axisX" style="margin-left:6px; font-size:13px; color:var(--muted)">x-axis</label>
-          <div style="width:10px"></div>
-          <input id="axisY" type="radio" name="axis" value="y" /> <label for="axisY" style="margin-left:6px; font-size:13px; color:var(--muted)">y-axis</label>
-        </div>
-      </div>
-
-      <div style="margin-top:14px; display:flex; gap:10px;">
-        <button id="toggle3D" class="btn">Enable 3D View</button>
-        <button id="spinToggle" class="btn" style="background:linear-gradient(180deg,#333,#111); color:#9ecbff; border:1px solid rgba(255,255,255,0.04)">Pause Spin</button>
-      </div>
-
-      <div class="info">
-        <div><strong class="math">Volume</strong> shown below uses the disk/washer method:</div>
-        <div style="margin-top:8px; font-size:13px; color:var(--muted)">
-          <span class="math">V = π ∫_a^b [f(x)]² dx</span> (when rotating around the x-axis).
-        </div>
-      </div>
-
-      <div style="margin-top:14px;">
-        <label>Resolution / sample points</label>
-        <input id="resRange" type="range" min="60" max="600" value="200" />
-      </div>
-
-      <div style="margin-top:14px;">
-        <div class="muted">Tip: try `y = √x` on [0,2] or `y = sin(x)` on [0,π].</div>
-      </div>
-
-      <div id="customFnContainer" style="margin-top:10px; display:none;">
-  <label for="customFnInput">Enter function f(x):</label>
-  <input id="customFnInput" type="text" placeholder="e.g. x*x + 2*x" />
-  <div class="muted" style="margin-top:4px;">You can use Math functions like <code>Math.sin(x)</code>, <code>Math.exp(x)</code>, etc.</div>
     </div>
-  </div>
 
-    <!-- Display area -->
-    <div class="canvas-area">
-      <div class="display-card" id="plotCard">
-        <div class="display-top">
-          <div class="badge">2D Curve</div>
-          <div style="width:10px"></div>
-          <div class="muted" id="curveLabel">y = x²</div>
+    <!-- Plots -->
+    <div class="panel plot-panel">
+      <div class="panel-header">
+        <div class="panel-title">Visualizations</div>
+        <div class="toolbar">
+          <span class="badge">Interactive</span>
         </div>
-        <canvas id="plot2d"></canvas>
       </div>
 
-      <div class="display-card" id="threeCard" style="display:none;">
-  <div class="display-top">
-  <div class="badge">3D Solid</div>
-  <div style="width:10px"></div>
-  <div class="muted">Revolve around <span id="axisLabel">x-axis</span></div>
-  <button id="fullscreen3D"
-    style="margin-left:auto; background:none; border:none; color:#7dd3fc; cursor:pointer; font-size:14px;">
-    ⛶ Fullscreen
-  </button>
-</div>
+      <div class="plots">
+        <div id="plot2d" class="panel" style="height: 360px;"></div>
 
-  <div id="three-root" style="width:100%; height:100%; position:relative;">
-    <canvas id="three-canvas"></canvas>
-  </div>
-</div>
-
-
-      <div class="bottom-stats">
-        <div class="stat"><strong>Function</strong><br><span id="fnText" class="math">y = x²</span></div>
-        <div class="stat"><strong>Interval</strong><br><span id="intervalText" class="math">[0, 2]</span></div>
-        <div class="stat"><strong>Volume</strong><br><span id="volumeText" class="math">—</span></div>
-        <div class="stat"><strong>Samples</strong><br><span id="sampleText" class="math">200</span></div>
+        <div class="plot3d-container" id="plot3dContainer">
+          <div class="actions">
+            <button id="expand3D" class="glow">Expand</button>
+            <button id="hide3D" class="glow">Hide 3D</button>
+          </div>
+          <div id="plot3d" style="width:100%; height: 100%;"></div>
+        </div>
       </div>
     </div>
   </div>
 
-<script>
-
-// Hide loading screen when page is fully loaded
-window.onload = function() {
-    const loadingScreen = document.getElementById('loadingScreen');
-    loadingScreen.style.transition = 'opacity 0.5s ease';
-    loadingScreen.style.opacity = '0';
-    setTimeout(() => loadingScreen.style.display = 'none', 500);
-};
-
-/* ---------------------------
-   Utility: functions presets
-   --------------------------- */
-const presets = {
-  "x^2": {
-    label: "y = x²",
-    f: x => x*x,
-    suggested: {a:0, b:2}
-  },
-  "sqrt": {
-    label: "y = √x",
-    f: x => x < 0 ? NaN : Math.sqrt(x),
-    suggested: {a:0, b:2}
-  },
-  "sin": {
-    label: "y = sin(x)",
-    f: x => Math.sin(x),
-    suggested: {a:0, b:Math.PI}
-  },
-  "0.5x": {
-    label: "y = 0.5x",
-    f: x => 0.5*x,
-    suggested: {a:0, b:4}
-  },
-  "cos": {
-    label: "y = cos(x)",
-    f: x => Math.cos(x),
-    suggested: {a: 0, b: Math.PI}
-  },
-  "tan": {
-    label: "y = tan(x)",
-    f: x => Math.tan(x),
-    suggested: {a: -Math.PI/4, b: Math.PI/4}
-  },
-  "exp": {
-    label: "y = e^x",
-    f: x => Math.exp(x),
-    suggested: {a: -1, b: 1}
-  },
-  "custom": {
-  label: "Custom (type below)",
-  f: x => 0, // default until user types something
-  suggested: {a: 0, b: 1}
-  }
-
-};
-
-
-/* ---------------------------
-   Elements & initial state
-   --------------------------- */
-const fnSelect = document.getElementById('fnSelect');
-const aInput = document.getElementById('aInput');
-const bInput = document.getElementById('bInput');
-const resRange = document.getElementById('resRange');
-const toggle3D = document.getElementById('toggle3D');
-const spinToggle = document.getElementById('spinToggle');
-
-const curveLabel = document.getElementById('curveLabel');
-const fnText = document.getElementById('fnText');
-const intervalText = document.getElementById('intervalText');
-const volumeText = document.getElementById('volumeText');
-const sampleText = document.getElementById('sampleText');
-const axisLabel = document.getElementById('axisLabel');
-
-const plotCard = document.getElementById('plotCard');
-const threeCard = document.getElementById('threeCard');
-const threeRoot = document.getElementById('three-root');
-
-let axis = 'x';
-document.getElementById('axisX').addEventListener('change', ()=> { axis='x'; axisLabel.innerText='x-axis'; drawAll(); });
-document.getElementById('axisY').addEventListener('change', ()=> { axis='y'; axisLabel.innerText='y-axis'; drawAll(); });
-
-/* ---------------------------
-   2D Plot (simple canvas)
-   --------------------------- */
-const canvas = document.getElementById('plot2d');
-const ctx = canvas.getContext('2d');
-
-function fitCanvas() {
-  const rect = plotCard.getBoundingClientRect();
-  canvas.width = Math.floor(rect.width * devicePixelRatio);
-  canvas.height = Math.floor(rect.height * devicePixelRatio);
-  canvas.style.width = rect.width + 'px';
-  canvas.style.height = rect.height + 'px';
-}
-window.addEventListener('resize', () => { fitCanvas(); drawAll(); });
-
-/* Coordinate mapping: world -> screen */
-function createMapper(a, b, fvals){
-  // We'll fit x range [a,b] horizontally and y range adaptively with small margins
-  const padding = 40 * devicePixelRatio;
-  const W = canvas.width, H = canvas.height;
-  const xs = fvals.map(p => p.x);
-  const ys = fvals.map(p => p.y);
-  const xmin = Math.min(...xs), xmax = Math.max(...xs);
-  const ymin = Math.min(...ys), ymax = Math.max(...ys);
-  // expand a little if degenerate
-  const xpad = Math.max((xmax-xmin)*0.06, 0.5);
-  const ypad = Math.max((ymax-ymin)*0.12, 0.5);
-  const X0 = xmin - xpad, X1 = xmax + xpad;
-  const Y0 = ymin - ypad, Y1 = ymax + ypad;
-  const sx = (W - 2*padding) / (X1 - X0);
-  const sy = (H - 2*padding) / (Y1 - Y0);
-
-  return {
-    toScreen: (x,y) => {
-      const sxX = padding + (x - X0) * sx;
-      const syY = H - padding - (y - Y0) * sy;
-      return [sxX, syY];
-    },
-    worldBounds: {X0,X1,Y0,Y1}
-  };
-}
-
-function drawAxes(map, bounds){
-  ctx.save();
-  ctx.lineWidth = 1 * devicePixelRatio;
-  ctx.strokeStyle = 'rgba(200,220,235,0.08)';
-  // grid lines
-  const {X0,X1,Y0,Y1} = bounds;
-  const nx = 6, ny = 6;
-  for(let i=0;i<=nx;i++){
-    const t = i/nx, x = X0 + (X1-X0)*t;
-    const [sx,_] = map.toScreen(x,0);
-    ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, canvas.height);
-    ctx.stroke();
-  }
-  for(let j=0;j<=ny;j++){
-    const t = j/ny, y = Y0 + (Y1-Y0)*t;
-    const [_,sy] = map.toScreen(0,y);
-    ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(canvas.width, sy);
-    ctx.stroke();
-  }
-
-  // thicker axes at x=0 or y=0 if visible
-  ctx.strokeStyle = 'rgba(125,211,252,0.14)';
-  ctx.lineWidth = 1.5 * devicePixelRatio;
-  // x-axis
-  if (Y0 <= 0 && Y1 >= 0){
-    const [x0, y0] = map.toScreen(0,0);
-    ctx.beginPath(); ctx.moveTo(0,y0); ctx.lineTo(canvas.width, y0); ctx.stroke();
-  }
-  // y-axis
-  if (X0 <= 0 && X1 >= 0){
-    const [x0, y0] = map.toScreen(0,0);
-    ctx.beginPath(); ctx.moveTo(x0,0); ctx.lineTo(x0, canvas.height); ctx.stroke();
-  }
-  ctx.restore();
-}
-
-function drawCurve(f, a, b, samples){
-  // compute sample points
-  const pts = [];
-  const dx = (b - a) / (samples - 1);
-  for(let i=0;i<samples;i++){
-    const x = a + dx * i;
-    const y = f(x);
-    if (!isFinite(y)) pts.push({x,y:0,skip:true});
-    else pts.push({x,y,skip:false});
-  }
-  // mapper
-  const map = createMapper(a,b,pts);
-  // clear
-  ctx.clearRect(0,0,canvas.width, canvas.height);
-  // background faint radial
-  const g = ctx.createLinearGradient(0,0,0,canvas.height);
-  g.addColorStop(0, 'rgba(255,255,255,0.01)');
-  g.addColorStop(1, 'rgba(255,255,255,0.00)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  drawAxes(map, map.worldBounds);
-
-  // plot the curve
-  ctx.save();
-  ctx.strokeStyle = 'rgba(125,211,252,0.95)';
-  ctx.lineWidth = 2.2 * devicePixelRatio;
-  ctx.beginPath();
-  let started = false;
-  for(let p of pts){
-    if (p.skip) { started=false; continue; }
-    const [sx,sy] = map.toScreen(p.x, p.y);
-    if (!started) { ctx.moveTo(sx,sy); started=true; }
-    else ctx.lineTo(sx,sy);
-  }
-  ctx.stroke();
-
-  // draw filled area to axis if axis is x
-  if (axis === 'x') {
-    ctx.fillStyle = 'rgba(125,211,252,0.06)';
-    ctx.beginPath();
-    let first = true;
-    for(let i=0;i<pts.length;i++){
-      const p = pts[i]; if (p.skip) continue;
-      const [sx,sy] = map.toScreen(p.x, p.y);
-      if (first){ ctx.moveTo(sx,sy); first=false; } else ctx.lineTo(sx,sy);
-    }
-    // go to last x on axis y=0 then back to first
-    const [sx0, sy0] = map.toScreen(pts[0].x, 0);
-    const [sxN, syN] = map.toScreen(pts[pts.length-1].x, 0);
-    ctx.lineTo(sxN, syN);
-    ctx.lineTo(sx0, sy0);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  ctx.restore();
-
-  // x,y labels
-  ctx.save();
-  ctx.fillStyle = 'rgba(255,255,255,0.06)';
-  ctx.font = (12 * devicePixelRatio) + "px " + "Fira Mono, monospace";
-  ctx.fillText("x →", canvas.width - 60 * devicePixelRatio, canvas.height - 10 * devicePixelRatio);
-  ctx.fillText("↑ y", 8 * devicePixelRatio, 12 * devicePixelRatio);
-  ctx.restore();
-
-  return pts;
-}
-
-/* ---------------------------
-   Numeric integration (Simpson)
-   --------------------------- */
-function simpsonIntegrate(f, a, b, n){
-  // n must be even
-  if (n % 2 === 1) n++;
-  const h = (b - a) / n;
-  let s = f(a) + f(b);
-  for (let i = 1; i < n; i++){
-    const x = a + i*h;
-    s += (i % 2 === 0) ? 2 * f(x) : 4 * f(x);
-  }
-  return (h/3) * s;
-}
-
-/* ---------------------------
-   Volume compute
-   --------------------------- */
-function computeVolume(f, a, b, samples){
-  // For rotation around x-axis: V = pi * ∫ [f(x)]^2 dx
-  if (axis === 'x'){
-    const integrand = x => {
-      const y = f(x);
-      return isFinite(y) ? y*y : 0;
-    };
-    const n = Math.max(60, Math.floor(samples/2)*2);
-    return Math.PI * simpsonIntegrate(integrand, a, b, n);
-  } else {
-    // Rotation around y-axis (use shells): V = 2*pi * ∫ x * f(x) dx if f>=0
-    const integrand = x => {
-      const y = f(x);
-      return isFinite(y) ? x * y : 0;
-    };
-    const n = Math.max(60, Math.floor(samples/2)*2);
-    return 2 * Math.PI * simpsonIntegrate(integrand, a, b, n);
-  }
-}
-
-/* ---------------------------
-   Hook up controls & state
-   --------------------------- */
-function updateControlsFromPreset(){
-  const key = fnSelect.value;
-  const preset = presets[key];
-  curveLabel.innerText = preset.label;
-  fnText.innerText = preset.label;
-  const sug = preset.suggested || {a:0,b:2};
-  aInput.value = sug.a;
-  bInput.value = sug.b;
-  intervalText.innerText = `[${sug.a}, ${sug.b}]`;
-}
-
-fnSelect.addEventListener('change', () => {
-  updateControlsFromPreset();
-  // Show input only if "custom" is selected
-  document.getElementById('customFnContainer').style.display = 
-      (fnSelect.value === 'custom') ? 'block' : 'none';
-  drawAll();
-});
-
-const customFnInput = document.getElementById('customFnInput');
-customFnInput.addEventListener('input', () => {
-  if (fnSelect.value === 'custom') {
-    try {
-      // Compile user input into a function f(x)
-      const expr = customFnInput.value;
-      presets.custom.f = new Function("x", `with (Math) { return ${expr}; }`);
-      drawAll();
-    } catch (err) {
-      // Invalid expression — do nothing
-    }
-  }
-});
-
-
-aInput.addEventListener('change', drawAll);
-bInput.addEventListener('change', drawAll);
-resRange.addEventListener('input', () => { sampleText.innerText = resRange.value; drawAll(); });
-
-/* ---------------------------
-   3D visualization using Three.js
-   --------------------------- */
-let renderer, scene, camera, solidMesh, axesHelper, controls;
-let spinning = true;
-
-function initThree(){
-  // create renderer
-  const canvas3 = document.getElementById('three-canvas');
-  renderer = new THREE.WebGLRenderer({canvas: canvas3, antialias:true, alpha:true});
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setSize(threeCard.clientWidth, threeCard.clientHeight, false);
-  renderer.setClearColor(new THREE.Color(0x071018), 0); // transparent bg
-  scene = new THREE.Scene();
-
-  camera = new THREE.PerspectiveCamera(45, threeCard.clientWidth / threeCard.clientHeight, 0.1, 2000);
-  camera.position.set(6, 4, 8);
-  camera.lookAt(0,0,0);
-
-  // lights
-  const hemi = new THREE.HemisphereLight(0xb0e6ff, 0x09151a, 0.8);
-  scene.add(hemi);
-  const dir = new THREE.DirectionalLight(0xcbeeff, 0.6);
-  dir.position.set(5,10,7);
-  scene.add(dir);
-
-  axesHelper = new THREE.AxesHelper(3);
-  axesHelper.visible = false;
-  scene.add(axesHelper);
-
-  // ground faint grid
-  const grid = new THREE.GridHelper(30, 30, 0x082233, 0x041217);
-  grid.material.opacity = 0.06;
-  grid.material.transparent = true;
-  scene.add(grid);
-
-  // initial empty mesh
-  solidMesh = null;
-
-  onWindowResizeThree();
-  window.addEventListener('resize', onWindowResizeThree);
-}
-
-function onWindowResizeThree(){
-  if (!renderer) return;
-  const w = threeCard.clientWidth, h = threeCard.clientHeight;
-  renderer.setSize(w, h, false);
-  camera.aspect = w/h;
-  camera.updateProjectionMatrix();
-}
-
-function buildSolidMesh(f, a, b, samples){
-  // We'll build by sampling curve in (x,y) and using LatheGeometry (revolve around y-axis)
-  // Strategy:
-  // - If rotating around x-axis: swap coords to produce profile for lathe
-  // - If rotating around y-axis: use x as radius and y as height (we will lathe around y)
-  const points = [];
-  const n = Math.max(8, samples);
-  for (let i = 0; i < n; i++){
-    const t = i / (n-1);
-    const x = a + (b - a) * t;
-    const y = f(x);
-    if (!isFinite(y)) { points.push(new THREE.Vector2(0, 0)); continue; }
-    if (axis === 'x'){
-      // For lathe we want points in (radius, height) pairs where height increases with x
-      // radius = y (distance from x-axis), height = x
-      points.push(new THREE.Vector2(Math.abs(y), x));
-    } else {
-      // rotation around y: radius = x, height = y
-      points.push(new THREE.Vector2(Math.abs(x), y));
-    }
-  }
-
-  // create geometry by rotating profile
-  const segments = 160;
-  const geom = new THREE.LatheGeometry(points, segments);
-  // compute bounding normals
-  geom.computeVertexNormals();
-
-  const mat = new THREE.MeshStandardMaterial({
-    color: 0x54c0ff,
-    metalness: 0.03,
-    roughness: 0.4,
-    transparent: true,
-    opacity: 0.96,
-    side: THREE.DoubleSide,
-  });
-
-  const mesh = new THREE.Mesh(geom, mat);
-  // center to nicer view
-  // small transform: if rotating around x, lathe used height as x; rotate so x is horizontal
-  if (axis === 'x'){
-    mesh.rotation.z = -Math.PI/2; // rotate to align with x-axis as horizontal
-  } else {
-    // rotate slightly for perspective
-  }
-  // add slight wireframe edge
-  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geom), new THREE.LineBasicMaterial({ color: 0x153d4f, linewidth: 1, transparent:true, opacity:0.06 }));
-  const group = new THREE.Group();
-  group.add(mesh);
-  group.add(edges);
-
-  return group;
-}
-
-function animateThree(){
-  if (!renderer) return;
-  requestAnimationFrame(animateThree);
-  if (solidMesh && spinning) {
-    solidMesh.rotation.y += 0.006;
-  }
-  renderer.render(scene, camera);
-}
-
-/* ---------------------------
-   Draw everything
-   --------------------------- */
-function drawAll(){
-  // prepare canvas size
-  fitCanvas();
-  const key = fnSelect.value;
-  const preset = presets[key];
-  const f = preset.f;
-
-  let a = parseFloat(aInput.value);
-  let b = parseFloat(bInput.value);
-  if (!isFinite(a)) a = 0;
-  if (!isFinite(b)) b = a + 1;
-  // if a > b, swap
-  if (a > b) { const t=a; a=b; b=t; aInput.value=a; bInput.value=b; }
-
-  const samples = Math.max(40, parseInt(resRange.value));
-  sampleText.innerText = samples;
-
-  // draw 2D curve
-  const pts = drawCurve(f, a, b, Math.min(800, samples));
-
-  // compute volume
-  const vol = computeVolume(f, a, b, samples);
-  const volText = vol ? (Math.abs(vol) < 1e-6 ? "≈ 0" : vol.toFixed(6)) : "—";
-  volumeText.innerText = volText + " (units³)";
-
-  intervalText.innerText = `[${a}, ${b}]`;
-  fnText.innerText = preset.label;
-  curveLabel.innerText = preset.label;
-
-  // 3D build if visible
-  if (threeCard.style.display !== 'none'){
-    // build mesh and replace
-    if (!renderer) initThree();
-    const newMesh = buildSolidMesh(f, a, b, Math.max(48, samples/2 | 0));
-    // remove previous
-    if (solidMesh) scene.remove(solidMesh);
-    solidMesh = newMesh;
-    scene.add(solidMesh);
-    // center & scale camera to fit
-    // compute bounding box
-    const box = new THREE.Box3().setFromObject(solidMesh);
-    const size = box.getSize(new THREE.Vector3());
-    const center = box.getCenter(new THREE.Vector3());
-    // move camera to fit
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const fov = camera.fov * (Math.PI/180);
-    const dist = Math.abs(maxDim / (2 * Math.tan(fov/2))) * 1.6;
-    camera.position.set(center.x + dist, center.y + dist*0.6, center.z + dist*0.6);
-    camera.lookAt(center);
-  }
-}
-
-/* ---------------------------
-   Button interactions
-   --------------------------- */
-let threeVisible = false;
-toggle3D.addEventListener('click', () => {
-  threeVisible = !threeVisible;
-  threeCard.style.display = threeVisible ? 'block' : 'none';
-  toggle3D.innerText = threeVisible ? 'Disable 3D View' : 'Enable 3D View';
-  // initialize three when turning on
-  if (threeVisible && !renderer) {
-    initThree();
-    animateThree();
-  }
-  drawAll();
-});
-
-spinToggle.addEventListener('click', () => {
-  spinning = !spinning;
-  spinToggle.innerText = spinning ? 'Pause Spin' : 'Resume Spin';
-  spinToggle.style.background = spinning ? 'linear-gradient(180deg,#333,#111)' : 'linear-gradient(180deg,#06314a, #072a3b)';
-});
-
-/* ---------------------------
-   Start
-   --------------------------- */
-(function init(){
-  // fill presets dropdown with labels (keeps keys)
-  fnSelect.innerHTML = Object.keys(presets).map(k => `<option value="${k}">${presets[k].label}</option>`).join('');
-  updateControlsFromPreset();
-  fitCanvas();
-  drawAll();
-})();
-
-const fullscreenBtn = document.getElementById('fullscreen3D');
-
-fullscreenBtn.addEventListener('click', () => {
-  const threeRoot = document.getElementById('three-root');
-  
-  if (!document.fullscreenElement) {
-    // Enter fullscreen
-    if (threeRoot.requestFullscreen) {
-      threeRoot.requestFullscreen();
-    } else if (threeRoot.webkitRequestFullscreen) { // Safari
-      threeRoot.webkitRequestFullscreen();
-    }
-  } else {
-    // Exit fullscreen
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if (document.webkitExitFullscreen) {
-      document.webkitExitFullscreen();
-    }
-  }
-});
-
-// When fullscreen changes, update button text and resize Three.js
-function handleFullscreenChange() {
-  if (document.fullscreenElement) {
-    fullscreenBtn.textContent = '✖ Exit';
-  } else {
-    fullscreenBtn.textContent = '⛶ Fullscreen';
-  }
-  onWindowResizeThree();
-}
-
-document.addEventListener('fullscreenchange', handleFullscreenChange);
-document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-
-
-</script>
-
-<footer>
-  <div class="footer-container">
-    <div class="footer-section">
-      <h4>About</h4>
-      <p>A tool to visualize solids of revolution in 2D & 3D using modern web tech.</p>
+  <div class="footer">
+    <div class="contact">
+      <span class="muted">Contact:</span>
+      <a href="mailto:semila.info@gmail.com">semila.info@gmail.com</a>
+      <span class="muted">•</span>
+      <a href="#" onclick="alert('Solid of Revolution- v2.0- A tool to visualize solids of revolution in 2D & 3D using modern web tech. © 2025 Semila Amajith');return false;">Semila Amajith</a>
     </div>
-    <div class="footer-section">
-      <h4>Contact</h4>
-      <p>Email: <a href="mailto:you@example.com">semila.info@gmail.com</a></p>
-      <p>GitHub: <a href="https://github.com/SemilAamajith11" target="_blank">SemilAamajith11</a></p>
-    </div>
-    <div class="footer-section">
-      <h4>Info</h4>
-      <p>Version: v1.0</p>
-      <p>© <span id="year"></span> Semila Amajith</p>
-      <p>Other Projects: <a href="calculator.html" target="_blank">Scientific Calculator</a></p>
-      <p><strong>Time:</strong> <span id="dateTime"></span></p>
-    </div>
+    <div class="clock" id="clock"></div>
   </div>
-</footer>
 
-<script>
-document.getElementById("year").textContent = new Date().getFullYear();
+  <script>
+    // --- State ---
+    let compiled = null; // compiled math.js function
+    let currentExpr = "x^2";
+    let axis = "x"; // 'x' or 'y'
+    let show3D = true;
+    let animating = false;
+    let phiMax = Math.PI * 2; // full rotation
+    let lastCameraAngle = 0;
+    const twoPi = Math.PI * 2;
 
-function updateDateTime() {
-  document.getElementById("dateTime").textContent =
-    new Date().toLocaleString();
-}
-setInterval(updateDateTime, 1000);
-updateDateTime();
-</script>
+    // --- Elements ---
+    const el = (id) => document.getElementById(id);
+    const presetSel = el('preset');
+    const customFnInput = el('customFn');
+    const aInput = el('a');
+    const bInput = el('b');
+    const chipX = el('chip-x'); const chipY = el('chip-y');
+    const updateBtn = el('updateBtn');
+    const animateBtn = el('animateBtn');
+    const toggle3DBtn = el('toggle3DBtn');
+    const expand3DBtn = el('expand3D');
+    const hide3DBtn = el('hide3D');
+    const plot3dContainer = el('plot3dContainer');
+    const formulaEl = el('formula');
+    const volumeValueEl = el('volumeValue');
+    const errorEl = el('error');
+    const loaderEl = el('loader');
+
+    // --- Helpers ---
+    function setError(msg){
+      if (!msg){ errorEl.style.display='none'; errorEl.textContent=''; return; }
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+    }
+
+    function linspace(a, b, n){
+      const arr = new Array(n);
+      if (n === 1){ arr[0] = a; return arr; }
+      const step = (b - a) / (n - 1);
+      for (let i=0;i<n;i++) arr[i] = a + i*step;
+      return arr;
+    }
+
+    function tryCompile(expr){
+      try{
+        const node = math.parse(expr);
+        const code = node.compile();
+        return function(x){
+          const val = code.evaluate({x});
+          if (!isFinite(val)) return NaN;
+          return val;
+        };
+      }catch(e){
+        return null;
+      }
+    }
+
+    function sampleFunction(fn, a, b, n=400){
+      const xs = linspace(a, b, n);
+      const ys = xs.map(x => {
+        try{
+          const y = fn(x);
+          return (isFinite(y) ? y : NaN);
+        }catch(_){ return NaN; }
+      });
+      return {xs, ys};
+    }
+
+    // Composite Simpson's rule (requires nEven even)
+    function integrateSimpson(fn, a, b, nEven=1000){
+      if (nEven % 2 === 1) nEven++;
+      const h = (b - a) / nEven;
+      let sum = 0;
+      let f0 = fn(a), fnB = fn(b);
+      if (!isFinite(f0) || !isFinite(fnB)) return NaN;
+
+      let oddSum = 0, evenSum = 0;
+      for (let i=1; i<nEven; i++){
+        const x = a + i*h;
+        const fx = fn(x);
+        if (!isFinite(fx)) return NaN;
+        if (i % 2 === 1) oddSum += fx;
+        else evenSum += fx;
+      }
+      sum = f0 + fnB + 4*oddSum + 2*evenSum;
+      return sum * h / 3;
+    }
+
+    function formatNumber(num){
+      if (!isFinite(num)) return "—";
+      if (Math.abs(num) >= 1e5 || Math.abs(num) < 1e-3) return num.toExponential(6);
+      return num.toLocaleString(undefined, {maximumFractionDigits: 6});
+    }
+
+    function updateAxisChips(){
+      chipX.classList.toggle('active', axis === 'x');
+      chipY.classList.toggle('active', axis === 'y');
+    }
+
+    // Plot 2D curve and area
+    function draw2D(fn, a, b, axis){
+      const n = 600;
+      const xs = linspace(a, b, n);
+      const ys = xs.map(x => {
+        try{ return fn(x);}catch(_){ return NaN; }
+      });
+
+      // Basic sanity: if too many NaNs, warn.
+      const invalid = ys.filter(y => !isFinite(y)).length;
+      if (invalid > n * 0.05){
+        setError("Function is not real-valued across the interval. Try changing a, b or the function.");
+      }else{
+        setError("");
+      }
+
+      // Build traces
+      const curveTrace = {
+        type: 'scatter',
+        mode: 'lines',
+        x: xs, y: ys,
+        line: { color: '#8fb6ff', width: 2 },
+        name: 'f(x)'
+      };
+
+      // Area highlight within [a,b] to axis (x-axis => tozeroy, y-axis => tozerox)
+      const areaTrace = {
+        type: 'scatter',
+        mode: 'lines',
+        x: xs, y: ys,
+        line: { color: 'rgba(126,242,154,0.0)', width: 0.5 },
+        fill: (axis === 'x') ? 'tozeroy' : 'tozerox',
+        fillcolor: 'rgba(126,242,154,0.22)',
+        name: 'Area (revolved)'
+      };
+
+      // Axis-of-revolution line
+      const shapes = [];
+      if (axis === 'x'){
+        shapes.push({
+          type: 'line', x0: a, x1: b, y0: 0, y1: 0,
+          line: {color: '#c778ff', width: 2, dash: 'dot'}
+        });
+      }else{
+        shapes.push({
+          type: 'line', x0: 0, x1: 0, y0: Math.min(...ys.filter(isFinite), 0), y1: Math.max(...ys.filter(isFinite), 0),
+          line: {color: '#c778ff', width: 2, dash: 'dot'}
+        });
+      }
+
+      const layout = {
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        margin: {l: 50, r: 20, t: 20, b: 40},
+        xaxis: {
+          gridcolor: '#1c2340', zerolinecolor: '#2b3561',
+          linecolor: '#2b3561', mirror: true,
+          tickfont: {color: '#bcd0ff'}, title: 'x', titlefont: {color: '#bcd0ff'}
+        },
+        yaxis: {
+          gridcolor: '#1c2340', zerolinecolor: '#2b3561',
+          linecolor: '#2b3561', mirror: true,
+          tickfont: {color: '#bcd0ff'}, title: 'y', titlefont: {color: '#bcd0ff'}
+        },
+        shapes,
+        showlegend: false
+      };
+
+      Plotly.newPlot('plot2d', [curveTrace, areaTrace], layout, {displayModeBar: true, responsive: true});
+    }
+
+    // Build surface mesh for rotation about x-axis
+    function surfaceAboutXAxis(fn, a, b, phiMax, nx=120, nPhi=80){
+      const xs = linspace(a, b, nx);
+      const phis = linspace(0, Math.max(phiMax, 1e-6), Math.max(3, Math.round(nPhi * (phiMax / (2*Math.PI) || 0.05))));
+      const X = [], Y = [], Z = [];
+      for (let i=0; i<xs.length; i++){
+        const x = xs[i];
+        let y;
+        try{ y = fn(x); }catch(_){ y = NaN; }
+        const r = Math.abs(y);
+        const rowX = [], rowY = [], rowZ = [];
+        for (let j=0; j<phis.length; j++){
+          const t = phis[j];
+          rowX.push(x);
+          rowY.push(r * Math.cos(t));
+          rowZ.push(r * Math.sin(t));
+        }
+        X.push(rowX); Y.push(rowY); Z.push(rowZ);
+      }
+      return {X, Y, Z};
+    }
+
+    // Build surface mesh for rotation about y-axis
+    function surfaceAboutYAxis(fn, a, b, phiMax, nx=120, nPhi=80){
+      const xs = linspace(a, b, nx);
+      const phis = linspace(0, Math.max(phiMax, 1e-6), Math.max(3, Math.round(nPhi * (phiMax / (2*Math.PI) || 0.05))));
+      const X = [], Y = [], Z = [];
+      for (let i=0; i<xs.length; i++){
+        const x = xs[i];
+        let y;
+        try{ y = fn(x); }catch(_){ y = NaN; }
+        const r = Math.abs(x);
+        const rowX = [], rowY = [], rowZ = [];
+        for (let j=0; j<phis.length; j++){
+          const t = phis[j];
+          rowX.push(r * Math.cos(t));
+          rowY.push(y);
+          rowZ.push(r * Math.sin(t));
+        }
+        X.push(rowX); Y.push(rowY); Z.push(rowZ);
+      }
+      return {X, Y, Z};
+    }
+
+    function draw3D(fn, a, b, axis, phiMax){
+      // Generate surface
+      const mesh = axis === 'x' ? surfaceAboutXAxis(fn, a, b, phiMax) : surfaceAboutYAxis(fn, a, b, phiMax);
+
+      const surface = {
+        type: 'surface',
+        x: mesh.X, y: mesh.Y, z: mesh.Z,
+        colorscale: [
+          [0, '#1b2d5b'],
+          [0.25, '#2a4f9e'],
+          [0.5, '#3b9ad9'],
+          [0.75, '#62d0ff'],
+          [1, '#c778ff']
+        ],
+        opacity: 0.95,
+        showscale: false,
+        lighting: {ambient: 0.6, diffuse: 0.9, roughness: 0.6, specular: 0.2}
+      };
+
+      const layout3d = {
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        scene: {
+          xaxis: {title: 'x', color: '#bcd0ff', gridcolor: '#1c2340', zerolinecolor: '#2b3561'},
+          yaxis: {title: axis === 'x' ? 'y (rotated)' : 'y', color: '#bcd0ff', gridcolor: '#1c2340', zerolinecolor: '#2b3561'},
+          zaxis: {title: 'z', color: '#bcd0ff', gridcolor: '#1c2340', zerolinecolor: '#2b3561'},
+          bgcolor: '#0e1425',
+          camera: {eye: {x: 1.6, y: 1.2, z: 1.4}}
+        },
+        margin: {l: 0, r: 0, t: 0, b: 0}
+      };
+
+      Plotly.newPlot('plot3d', [surface], layout3d, {displayModeBar: true, responsive: true});
+    }
+
+    function update3D(fn, a, b){
+      if (!show3D) return;
+      draw3D(fn, a, b, axis, phiMax);
+    }
+
+    function updateFormulaDisplay(){
+      // Show the formula used for volume
+      if (axis === 'x'){
+        formulaEl.textContent = "V = π ∫[a→b] (f(x))^2 dx  (washers about x-axis)";
+      } else {
+        formulaEl.textContent = "V = 2π ∫[a→b] |x|·|f(x)| dx  (cylindrical shells about y-axis)";
+      }
+      if (window.MathJax && MathJax.typesetPromise){
+        // Using text content; keeping simple. If you want TeX, you can wrap with KATEX_INLINE_OPEN KATEX_INLINE_CLOSE.
+        MathJax.typesetPromise();
+      }
+    }
+
+    function computeVolume(fn, a, b){
+      if (a === b) return 0;
+      if (a > b) [a, b] = [b, a];
+
+      if (axis === 'x'){
+        // V = π ∫ f(x)^2 dx
+        const integral = integrateSimpson(x => {
+          const y = fn(x);
+          if (!isFinite(y)) return NaN;
+          return y*y;
+        }, a, b, 1000);
+        return Math.PI * integral;
+      } else {
+        // V = 2π ∫ |x| |f(x)| dx
+        const integral = integrateSimpson(x => {
+          const y = fn(x);
+          if (!isFinite(y)) return NaN;
+          return Math.abs(x) * Math.abs(y);
+        }, a, b, 1000);
+        return 2 * Math.PI * integral;
+      }
+    }
+
+    function updateAll(){
+      // Compile function
+      const expr = (presetSel.value === 'custom') ? customFnInput.value.trim() : presetSel.value;
+      const fn = tryCompile(expr);
+      if (!fn){
+        setError("Could not parse function. Check your expression.");
+        return;
+      }
+      compiled = fn;
+      currentExpr = expr;
+
+      // Limits
+      let a = parseFloat(aInput.value);
+      let b = parseFloat(bInput.value);
+      if (!isFinite(a) || !isFinite(b)){
+        setError("Please enter numeric limits a and b.");
+        return;
+      }
+      if (a > b){ const t=a; a=b; b=t; aInput.value=a; bInput.value=b; }
+
+      // 2D plot
+      draw2D(compiled, a, b, axis);
+
+      // Volume
+      const V = computeVolume(compiled, a, b);
+      if (!isFinite(V)){
+        setError("Volume integral failed (function not real-valued on the interval).");
+        volumeValueEl.textContent = "—";
+      }else{
+        setError("");
+        volumeValueEl.textContent = formatNumber(V) + " (units³)";
+      }
+
+      // 3D
+      updateFormulaDisplay();
+      update3D(compiled, a, b);
+    }
+
+    // Animation
+    let animReq = null;
+    function animate(){
+      if (!animating) return;
+      phiMax += (Math.PI / 90); // grows the sweep
+      if (phiMax > twoPi) phiMax = twoPi;
+
+      // gentle camera orbit
+      lastCameraAngle += 0.02;
+      const R = 1.8;
+      const eye = {x: R*Math.cos(lastCameraAngle), y: 1.1, z: R*Math.sin(lastCameraAngle)};
+      Plotly.relayout('plot3d', {'scene.camera.eye': eye});
+
+      // update surface
+      const a = parseFloat(aInput.value), b = parseFloat(bInput.value);
+      const mesh = (axis === 'x') ? surfaceAboutXAxis(compiled, a, b, phiMax) : surfaceAboutYAxis(compiled, a, b, phiMax);
+      Plotly.restyle('plot3d', {x: [mesh.X], y: [mesh.Y], z: [mesh.Z]});
+
+      if (phiMax < twoPi){
+        animReq = requestAnimationFrame(animate);
+      }else{
+        // Done
+        animating = false;
+        animateBtn.textContent = "Animate Rotation";
+      }
+    }
+
+    // --- Event wiring ---
+    presetSel.addEventListener('change', () => {
+      const isCustom = presetSel.value === 'custom';
+      customFnInput.disabled = !isCustom;
+      if (!isCustom){
+        customFnInput.value = "";
+      }
+      updateAll();
+    });
+    customFnInput.addEventListener('change', updateAll);
+    aInput.addEventListener('change', updateAll);
+    bInput.addEventListener('change', updateAll);
+
+    chipX.addEventListener('click', () => {
+      axis = 'x'; updateAxisChips(); updateAll();
+    });
+    chipY.addEventListener('click', () => {
+      axis = 'y'; updateAxisChips(); updateAll();
+    });
+
+    updateBtn.addEventListener('click', () => { phiMax = twoPi; animating = false; updateAll(); });
+
+    animateBtn.addEventListener('click', () => {
+      if (!show3D){ show3D = true; plot3dContainer.style.display = ''; }
+      if (animating){
+        animating = false; animateBtn.textContent = "Animate Rotation";
+        if (animReq) cancelAnimationFrame(animReq);
+      }else{
+        phiMax = 0.0001; // start from 0
+        animating = true; animateBtn.textContent = "Pause Animation";
+        updateAll(); // draw starting sweep
+        animReq = requestAnimationFrame(animate);
+      }
+    });
+
+    toggle3DBtn.addEventListener('click', () => {
+      show3D = !show3D;
+      plot3dContainer.style.display = show3D ? '' : 'none';
+      if (show3D) updateAll();
+    });
+
+    expand3DBtn.addEventListener('click', () => {
+      const expanded = plot3dContainer.classList.toggle('expanded');
+      expand3DBtn.textContent = expanded ? 'Collapse' : 'Expand';
+      setTimeout(() => Plotly.Plots.resize('plot3d'), 350);
+    });
+
+    hide3DBtn.addEventListener('click', () => {
+      show3D = false;
+      plot3dContainer.style.display = 'none';
+    });
+
+    el('resetBtn').addEventListener('click', () => {
+      presetSel.value = 'x^2';
+      customFnInput.value = "";
+      customFnInput.disabled = true;
+      aInput.value = 0; bInput.value = 2;
+      axis = 'x'; updateAxisChips();
+      phiMax = twoPi; animating = false; animateBtn.textContent = "Animate Rotation";
+      updateAll();
+    });
+
+    // Clock (device time)
+    function updateClock(){
+      const d = new Date();
+      const str = d.toLocaleString(undefined, {
+        weekday: 'short',
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+      el('clock').textContent = 'Device time: ' + str;
+    }
+    setInterval(updateClock, 1000);
+
+    // Initial
+    window.addEventListener('load', () => {
+      updateClock();
+      updateAll();
+      setTimeout(() => loaderEl.classList.add('hidden'), 400);
+    });
+
+    window.addEventListener('resize', () => {
+      Plotly.Plots.resize('plot2d');
+      if (show3D) Plotly.Plots.resize('plot3d');
+    });
+  </script>
 </body>
 </html>
