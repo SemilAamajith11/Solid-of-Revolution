@@ -1,0 +1,1074 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Solid of Revolution</title>
+
+<!-- Three.js CDN -->
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+
+<style>
+
+/* Loading Screen Styles */
+#loadingScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #121212; /* Match dark theme */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#loadingScreen img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+}
+
+#loadingScreen span {
+    font-size: 1.5em;
+    color: #60a5fa;
+}
+
+/* Popup */
+/* Version Popup Styles */
+#versionPopup {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: none; /* hidden by default */
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+#versionPopup .popup-content {
+  background: #0f1720;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  color: #e6eef6;
+  position: relative;
+  box-shadow: 0 6px 30px rgba(2,6,10,0.6);
+  border: 1px solid rgba(125,211,252,0.2);
+}
+
+#versionPopup h2 {
+  margin: 0 0 10px;
+  color: #60a5fa;
+}
+
+#versionPopup p {
+  font-size: 14px;
+  color: #ccc;
+  margin-bottom: 20px;
+}
+
+#versionPopup .popup-btn {
+  display: inline-block;
+  padding: 10px 16px;
+  background: linear-gradient(180deg,#60a5fa,#7dd3fc);
+  color: #042033;
+  border-radius: 8px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: 0.2s;
+}
+#versionPopup .popup-btn:hover {
+  background: linear-gradient(180deg,#7dd3fc,#60a5fa);
+}
+
+#versionPopup .close-btn {
+  position: absolute;
+  top: 8px; right: 12px;
+  font-size: 22px;
+  cursor: pointer;
+  color: #aaa;
+  transition: color 0.2s;
+}
+#versionPopup .close-btn:hover {
+  color: #fff;
+}
+
+/* Footer Styles */
+footer {
+    background: linear-gradient(180deg, #0d0d0d, #071018);
+    padding: 20px 10px;
+    border-top: 1px solid #333;
+    color: #aaa;
+    font-family: 'Times New Roman', serif;
+    font-style: normal;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}
+
+.footer-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.footer-section {
+    flex: 1;
+    min-width: 200px;
+}
+
+.footer-section h4 {
+    margin-bottom: 8px;
+    color: #60a5fa;
+    font-size: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 4px;
+}
+
+.footer-section p {
+    margin: 4px 0;
+    font-size: 13px;
+    color: #888;
+}
+
+.footer-section a {
+    color: #7dd3fc;
+    text-decoration: none;
+}
+
+.footer-section a:hover {
+    text-decoration: underline;
+}
+
+
+
+  :root{
+    --bg:#0b0f14;
+    --panel:#0f1720;
+    --muted:#9aa6b2;
+    --accent:#7dd3fc;
+    --accent-2:#60a5fa;
+    --glow: rgba(125,211,252,0.12);
+    --card:#0c1318;
+    --mono: "Fira Mono", "Roboto Mono", monospace;
+  }
+
+  html,body{
+    height:100%;
+    margin:0;
+    background:linear-gradient(180deg,#071018 0%, #07111b 60%);
+    color:#e6eef6;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  .wrap{
+    max-width:1200px;
+    margin:28px auto;
+    display:grid;
+    grid-template-columns: 420px 1fr;
+    gap:20px;
+    padding:20px;
+  }
+
+  .panel{
+    background:linear-gradient(180deg,var(--panel), rgba(6,10,13,0.6));
+    border-radius:12px;
+    padding:18px;
+    box-shadow: 0 6px 30px rgba(2,6,10,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+    border: 1px solid rgba(125,211,252,0.06);
+  }
+
+  h1{
+    margin:0 0 12px 0;
+    font-size:18px;
+    letter-spacing:0.4px;
+  }
+  .muted { color:var(--muted); font-size:13px; margin-top:6px; }
+
+  label{ display:block; margin:12px 0 6px; font-weight:600; font-size:13px; color:#cfeafe; }
+  select, input[type="number"]{
+    width:100%;
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.06);
+    padding:8px 10px;
+    border-radius:8px;
+    color:var(--muted);
+    font-family:var(--mono);
+    font-size:13px;
+    outline:none;
+  }
+
+  .row { display:flex; gap:10px; align-items:center; }
+  .small { flex:1; }
+
+  .btn {
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 14px;
+    background:linear-gradient(180deg,var(--accent-2), var(--accent));
+    color:#042033;
+    border:none;
+    border-radius:10px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow: 0 6px 20px rgba(96,165,250,0.14), 0 0 24px rgba(125,211,252,0.04) inset;
+    transition:transform .14s ease, box-shadow .14s;
+  }
+  .btn:active{ transform:translateY(1px) }
+
+  .toggle {
+    background: linear-gradient(180deg,#0b1116,#071018);
+    border: 1px solid rgba(255,255,255,0.04);
+    padding:8px;
+    border-radius:10px;
+    display:inline-flex;
+    gap:8px;
+    align-items:center;
+  }
+
+  .info {
+    margin-top:12px;
+    padding:10px;
+    border-radius:8px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
+    border:1px solid rgba(255,255,255,0.02);
+    font-family:var(--mono);
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  /* Canvas containers */
+  .canvas-area{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    height: calc(100vh - 120px);
+  }
+
+  .display-card{
+    flex:1;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border-radius:12px;
+    overflow:hidden;
+    position:relative;
+    border:1px solid rgba(255,255,255,0.03);
+  }
+
+  /* top bar inside display */
+  .display-top{
+    position:absolute;
+    top:12px;
+    left:12px;
+    z-index:6;
+    display:flex;
+    gap:8px;
+    align-items:center;
+    background:rgba(2,6,10,0.35);
+    padding:8px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.03);
+    backdrop-filter: blur(4px);
+  }
+
+  .badge{
+    font-family:var(--mono);
+    background: linear-gradient(90deg,#072a3b, #06314a);
+    padding:6px 10px;
+    border-radius:8px;
+    font-weight:700;
+    color:var(--accent);
+    border:1px solid rgba(125,211,252,0.06);
+    font-size:13px;
+  }
+
+  canvas#plot2d{
+    width:100%;
+    height:100%;
+    display:block;
+  }
+
+  #three-canvas{
+    width:100%;
+    height:100%;
+    display:block;
+  }
+
+  .bottom-stats{
+    display:flex;
+    gap:12px;
+    padding:12px;
+    align-items:center;
+  }
+
+  .stat{
+    padding:10px 12px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+    border-radius:10px;
+    font-family:var(--mono);
+    color:var(--muted);
+    font-size:13px;
+    border:1px solid rgba(255,255,255,0.02);
+  }
+
+  .math {
+    font-family: var(--mono);
+    color:#dff8ff;
+    background: linear-gradient(90deg, rgba(125,211,252,0.04), transparent);
+    padding:6px 8px;
+    border-radius:6px;
+    border:1px solid rgba(125,211,252,0.04);
+  }
+
+  /* responsive */
+  @media (max-width:980px){
+    .wrap{ grid-template-columns: 1fr; padding:14px; }
+    .canvas-area{ height: 60vh; }
+  }
+
+</style>
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div id="loadingScreen">
+    <img src="loading.gif" alt="Loading...">
+    <span>Loading...</span>
+</div>
+
+  <div class="wrap">
+    <!-- Control panel -->
+    <div class="panel">
+      <h1>Solid of Revolution</h1>
+      <div class="muted">Pick a preset function, set limits, then toggle 3D.</div>
+
+      <label for="fnSelect">Preset function</label>
+      <select id="fnSelect">
+        <option value="x^2">y = x²</option>
+        <option value="sqrt">y = √x</option>
+        <option value="sin">y = sin(x)</option>
+        <option value="0.5x">y = 0.5x</option>
+      </select>
+
+      <!-- Custom function input (hidden by default) -->
+<div id="customFnContainer" style="margin-top:10px; display:none;">
+  <label for="customFnInput">Enter function f(x):</label>
+  <input id="customFnInput" type="text" placeholder="e.g. x*x + 2*x" style="width:100%;" />
+  <div class="muted" style="margin-top:4px;">
+    You can use Math functions like <code>Math.sin(x)</code>, <code>Math.exp(x)</code>, etc.
+  </div>
+</div>
+
+
+      <div class="row" style="margin-top:12px">
+        <div style="flex:1">
+          <label for="aInput">a (start)</label>
+          <input id="aInput" type="number" step="0.01" value="0" />
+        </div>
+        <div style="flex:1">
+          <label for="bInput">b (end)</label>
+          <input id="bInput" type="number" step="0.01" value="2" />
+        </div>
+      </div>
+
+      <label style="margin-top:14px">Axis of revolution</label>
+      <div class="row">
+        <div class="toggle">
+          <input id="axisX" type="radio" name="axis" value="x" checked /> <label for="axisX" style="margin-left:6px; font-size:13px; color:var(--muted)">x-axis</label>
+          <div style="width:10px"></div>
+          <input id="axisY" type="radio" name="axis" value="y" /> <label for="axisY" style="margin-left:6px; font-size:13px; color:var(--muted)">y-axis</label>
+        </div>
+      </div>
+
+      <div style="margin-top:14px; display:flex; gap:10px;">
+        <button id="toggle3D" class="btn">Enable 3D View</button>
+        <button id="spinToggle" class="btn" style="background:linear-gradient(180deg,#333,#111); color:#9ecbff; border:1px solid rgba(255,255,255,0.04)">Pause Spin</button>
+      </div>
+
+      <div class="info">
+        <div><strong class="math">Volume</strong> shown below uses the disk/washer method:</div>
+        <div style="margin-top:8px; font-size:13px; color:var(--muted)">
+          <span class="math">V = π ∫_a^b [f(x)]² dx</span> (when rotating around the x-axis).
+        </div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <label>Resolution / sample points</label>
+        <input id="resRange" type="range" min="60" max="600" value="200" />
+      </div>
+
+      <div style="margin-top:14px;">
+        <div class="muted">Tip: try `y = √x` on [0,2] or `y = sin(x)` on [0,π].</div>
+      </div>
+
+      <div id="customFnContainer" style="margin-top:10px; display:none;">
+  <label for="customFnInput">Enter function f(x):</label>
+  <input id="customFnInput" type="text" placeholder="e.g. x*x + 2*x" />
+  <div class="muted" style="margin-top:4px;">You can use Math functions like <code>Math.sin(x)</code>, <code>Math.exp(x)</code>, etc.</div>
+    </div>
+  </div>
+
+    <!-- Display area -->
+    <div class="canvas-area">
+      <div class="display-card" id="plotCard">
+        <div class="display-top">
+          <div class="badge">2D Curve</div>
+          <div style="width:10px"></div>
+          <div class="muted" id="curveLabel">y = x²</div>
+        </div>
+        <canvas id="plot2d"></canvas>
+      </div>
+
+      <div class="display-card" id="threeCard" style="display:none;">
+  <div class="display-top">
+  <div class="badge">3D Solid</div>
+  <div style="width:10px"></div>
+  <div class="muted">Revolve around <span id="axisLabel">x-axis</span></div>
+  <button id="fullscreen3D"
+    style="margin-left:auto; background:none; border:none; color:#7dd3fc; cursor:pointer; font-size:14px;">
+    ⛶ Fullscreen
+  </button>
+</div>
+
+  <div id="three-root" style="width:100%; height:100%; position:relative;">
+    <canvas id="three-canvas"></canvas>
+  </div>
+</div>
+
+
+      <div class="bottom-stats">
+        <div class="stat"><strong>Function</strong><br><span id="fnText" class="math">y = x²</span></div>
+        <div class="stat"><strong>Interval</strong><br><span id="intervalText" class="math">[0, 2]</span></div>
+        <div class="stat"><strong>Volume</strong><br><span id="volumeText" class="math">—</span></div>
+        <div class="stat"><strong>Samples</strong><br><span id="sampleText" class="math">200</span></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+
+// Hide loading screen when page is fully loaded
+window.onload = function() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    loadingScreen.style.transition = 'opacity 0.5s ease';
+    loadingScreen.style.opacity = '0';
+    setTimeout(() => loadingScreen.style.display = 'none', 500);
+};
+
+/* ---------------------------
+   Utility: functions presets
+   --------------------------- */
+const presets = {
+  "x^2": {
+    label: "y = x²",
+    f: x => x*x,
+    suggested: {a:0, b:2}
+  },
+  "sqrt": {
+    label: "y = √x",
+    f: x => x < 0 ? NaN : Math.sqrt(x),
+    suggested: {a:0, b:2}
+  },
+  "sin": {
+    label: "y = sin(x)",
+    f: x => Math.sin(x),
+    suggested: {a:0, b:Math.PI}
+  },
+  "0.5x": {
+    label: "y = 0.5x",
+    f: x => 0.5*x,
+    suggested: {a:0, b:4}
+  },
+  "cos": {
+    label: "y = cos(x)",
+    f: x => Math.cos(x),
+    suggested: {a: 0, b: Math.PI}
+  },
+  "tan": {
+    label: "y = tan(x)",
+    f: x => Math.tan(x),
+    suggested: {a: -Math.PI/4, b: Math.PI/4}
+  },
+  "exp": {
+    label: "y = e^x",
+    f: x => Math.exp(x),
+    suggested: {a: -1, b: 1}
+  },
+  "custom": {
+  label: "Custom (type below)",
+  f: x => 0, // default until user types something
+  suggested: {a: 0, b: 1}
+  }
+
+};
+
+
+/* ---------------------------
+   Elements & initial state
+   --------------------------- */
+const fnSelect = document.getElementById('fnSelect');
+const aInput = document.getElementById('aInput');
+const bInput = document.getElementById('bInput');
+const resRange = document.getElementById('resRange');
+const toggle3D = document.getElementById('toggle3D');
+const spinToggle = document.getElementById('spinToggle');
+
+const curveLabel = document.getElementById('curveLabel');
+const fnText = document.getElementById('fnText');
+const intervalText = document.getElementById('intervalText');
+const volumeText = document.getElementById('volumeText');
+const sampleText = document.getElementById('sampleText');
+const axisLabel = document.getElementById('axisLabel');
+
+const plotCard = document.getElementById('plotCard');
+const threeCard = document.getElementById('threeCard');
+const threeRoot = document.getElementById('three-root');
+
+let axis = 'x';
+document.getElementById('axisX').addEventListener('change', ()=> { axis='x'; axisLabel.innerText='x-axis'; drawAll(); });
+document.getElementById('axisY').addEventListener('change', ()=> { axis='y'; axisLabel.innerText='y-axis'; drawAll(); });
+
+/* ---------------------------
+   2D Plot (simple canvas)
+   --------------------------- */
+const canvas = document.getElementById('plot2d');
+const ctx = canvas.getContext('2d');
+
+function fitCanvas() {
+  const rect = plotCard.getBoundingClientRect();
+  canvas.width = Math.floor(rect.width * devicePixelRatio);
+  canvas.height = Math.floor(rect.height * devicePixelRatio);
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = rect.height + 'px';
+}
+window.addEventListener('resize', () => { fitCanvas(); drawAll(); });
+
+/* Coordinate mapping: world -> screen */
+function createMapper(a, b, fvals){
+  // We'll fit x range [a,b] horizontally and y range adaptively with small margins
+  const padding = 40 * devicePixelRatio;
+  const W = canvas.width, H = canvas.height;
+  const xs = fvals.map(p => p.x);
+  const ys = fvals.map(p => p.y);
+  const xmin = Math.min(...xs), xmax = Math.max(...xs);
+  const ymin = Math.min(...ys), ymax = Math.max(...ys);
+  // expand a little if degenerate
+  const xpad = Math.max((xmax-xmin)*0.06, 0.5);
+  const ypad = Math.max((ymax-ymin)*0.12, 0.5);
+  const X0 = xmin - xpad, X1 = xmax + xpad;
+  const Y0 = ymin - ypad, Y1 = ymax + ypad;
+  const sx = (W - 2*padding) / (X1 - X0);
+  const sy = (H - 2*padding) / (Y1 - Y0);
+
+  return {
+    toScreen: (x,y) => {
+      const sxX = padding + (x - X0) * sx;
+      const syY = H - padding - (y - Y0) * sy;
+      return [sxX, syY];
+    },
+    worldBounds: {X0,X1,Y0,Y1}
+  };
+}
+
+function drawAxes(map, bounds){
+  ctx.save();
+  ctx.lineWidth = 1 * devicePixelRatio;
+  ctx.strokeStyle = 'rgba(200,220,235,0.08)';
+  // grid lines
+  const {X0,X1,Y0,Y1} = bounds;
+  const nx = 6, ny = 6;
+  for(let i=0;i<=nx;i++){
+    const t = i/nx, x = X0 + (X1-X0)*t;
+    const [sx,_] = map.toScreen(x,0);
+    ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, canvas.height);
+    ctx.stroke();
+  }
+  for(let j=0;j<=ny;j++){
+    const t = j/ny, y = Y0 + (Y1-Y0)*t;
+    const [_,sy] = map.toScreen(0,y);
+    ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(canvas.width, sy);
+    ctx.stroke();
+  }
+
+  // thicker axes at x=0 or y=0 if visible
+  ctx.strokeStyle = 'rgba(125,211,252,0.14)';
+  ctx.lineWidth = 1.5 * devicePixelRatio;
+  // x-axis
+  if (Y0 <= 0 && Y1 >= 0){
+    const [x0, y0] = map.toScreen(0,0);
+    ctx.beginPath(); ctx.moveTo(0,y0); ctx.lineTo(canvas.width, y0); ctx.stroke();
+  }
+  // y-axis
+  if (X0 <= 0 && X1 >= 0){
+    const [x0, y0] = map.toScreen(0,0);
+    ctx.beginPath(); ctx.moveTo(x0,0); ctx.lineTo(x0, canvas.height); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawCurve(f, a, b, samples){
+  // compute sample points
+  const pts = [];
+  const dx = (b - a) / (samples - 1);
+  for(let i=0;i<samples;i++){
+    const x = a + dx * i;
+    const y = f(x);
+    if (!isFinite(y)) pts.push({x,y:0,skip:true});
+    else pts.push({x,y,skip:false});
+  }
+  // mapper
+  const map = createMapper(a,b,pts);
+  // clear
+  ctx.clearRect(0,0,canvas.width, canvas.height);
+  // background faint radial
+  const g = ctx.createLinearGradient(0,0,0,canvas.height);
+  g.addColorStop(0, 'rgba(255,255,255,0.01)');
+  g.addColorStop(1, 'rgba(255,255,255,0.00)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  drawAxes(map, map.worldBounds);
+
+  // plot the curve
+  ctx.save();
+  ctx.strokeStyle = 'rgba(125,211,252,0.95)';
+  ctx.lineWidth = 2.2 * devicePixelRatio;
+  ctx.beginPath();
+  let started = false;
+  for(let p of pts){
+    if (p.skip) { started=false; continue; }
+    const [sx,sy] = map.toScreen(p.x, p.y);
+    if (!started) { ctx.moveTo(sx,sy); started=true; }
+    else ctx.lineTo(sx,sy);
+  }
+  ctx.stroke();
+
+  // draw filled area to axis if axis is x
+  if (axis === 'x') {
+    ctx.fillStyle = 'rgba(125,211,252,0.06)';
+    ctx.beginPath();
+    let first = true;
+    for(let i=0;i<pts.length;i++){
+      const p = pts[i]; if (p.skip) continue;
+      const [sx,sy] = map.toScreen(p.x, p.y);
+      if (first){ ctx.moveTo(sx,sy); first=false; } else ctx.lineTo(sx,sy);
+    }
+    // go to last x on axis y=0 then back to first
+    const [sx0, sy0] = map.toScreen(pts[0].x, 0);
+    const [sxN, syN] = map.toScreen(pts[pts.length-1].x, 0);
+    ctx.lineTo(sxN, syN);
+    ctx.lineTo(sx0, sy0);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  ctx.restore();
+
+  // x,y labels
+  ctx.save();
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.font = (12 * devicePixelRatio) + "px " + "Fira Mono, monospace";
+  ctx.fillText("x →", canvas.width - 60 * devicePixelRatio, canvas.height - 10 * devicePixelRatio);
+  ctx.fillText("↑ y", 8 * devicePixelRatio, 12 * devicePixelRatio);
+  ctx.restore();
+
+  return pts;
+}
+
+/* ---------------------------
+   Numeric integration (Simpson)
+   --------------------------- */
+function simpsonIntegrate(f, a, b, n){
+  // n must be even
+  if (n % 2 === 1) n++;
+  const h = (b - a) / n;
+  let s = f(a) + f(b);
+  for (let i = 1; i < n; i++){
+    const x = a + i*h;
+    s += (i % 2 === 0) ? 2 * f(x) : 4 * f(x);
+  }
+  return (h/3) * s;
+}
+
+/* ---------------------------
+   Volume compute
+   --------------------------- */
+function computeVolume(f, a, b, samples){
+  // For rotation around x-axis: V = pi * ∫ [f(x)]^2 dx
+  if (axis === 'x'){
+    const integrand = x => {
+      const y = f(x);
+      return isFinite(y) ? y*y : 0;
+    };
+    const n = Math.max(60, Math.floor(samples/2)*2);
+    return Math.PI * simpsonIntegrate(integrand, a, b, n);
+  } else {
+    // Rotation around y-axis (use shells): V = 2*pi * ∫ x * f(x) dx if f>=0
+    const integrand = x => {
+      const y = f(x);
+      return isFinite(y) ? x * y : 0;
+    };
+    const n = Math.max(60, Math.floor(samples/2)*2);
+    return 2 * Math.PI * simpsonIntegrate(integrand, a, b, n);
+  }
+}
+
+/* ---------------------------
+   Hook up controls & state
+   --------------------------- */
+function updateControlsFromPreset(){
+  const key = fnSelect.value;
+  const preset = presets[key];
+  curveLabel.innerText = preset.label;
+  fnText.innerText = preset.label;
+  const sug = preset.suggested || {a:0,b:2};
+  aInput.value = sug.a;
+  bInput.value = sug.b;
+  intervalText.innerText = `[${sug.a}, ${sug.b}]`;
+}
+
+fnSelect.addEventListener('change', () => {
+  updateControlsFromPreset();
+  // Show input only if "custom" is selected
+  document.getElementById('customFnContainer').style.display = 
+      (fnSelect.value === 'custom') ? 'block' : 'none';
+  drawAll();
+});
+
+const customFnInput = document.getElementById('customFnInput');
+customFnInput.addEventListener('input', () => {
+  if (fnSelect.value === 'custom') {
+    try {
+      // Compile user input into a function f(x)
+      const expr = customFnInput.value;
+      presets.custom.f = new Function("x", `with (Math) { return ${expr}; }`);
+      drawAll();
+    } catch (err) {
+      // Invalid expression — do nothing
+    }
+  }
+});
+
+
+aInput.addEventListener('change', drawAll);
+bInput.addEventListener('change', drawAll);
+resRange.addEventListener('input', () => { sampleText.innerText = resRange.value; drawAll(); });
+
+/* ---------------------------
+   3D visualization using Three.js
+   --------------------------- */
+let renderer, scene, camera, solidMesh, axesHelper, controls;
+let spinning = true;
+
+function initThree(){
+  // create renderer
+  const canvas3 = document.getElementById('three-canvas');
+  renderer = new THREE.WebGLRenderer({canvas: canvas3, antialias:true, alpha:true});
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(threeCard.clientWidth, threeCard.clientHeight, false);
+  renderer.setClearColor(new THREE.Color(0x071018), 0); // transparent bg
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(45, threeCard.clientWidth / threeCard.clientHeight, 0.1, 2000);
+  camera.position.set(6, 4, 8);
+  camera.lookAt(0,0,0);
+
+  // lights
+  const hemi = new THREE.HemisphereLight(0xb0e6ff, 0x09151a, 0.8);
+  scene.add(hemi);
+  const dir = new THREE.DirectionalLight(0xcbeeff, 0.6);
+  dir.position.set(5,10,7);
+  scene.add(dir);
+
+  axesHelper = new THREE.AxesHelper(3);
+  axesHelper.visible = false;
+  scene.add(axesHelper);
+
+  // ground faint grid
+  const grid = new THREE.GridHelper(30, 30, 0x082233, 0x041217);
+  grid.material.opacity = 0.06;
+  grid.material.transparent = true;
+  scene.add(grid);
+
+  // initial empty mesh
+  solidMesh = null;
+
+  onWindowResizeThree();
+  window.addEventListener('resize', onWindowResizeThree);
+}
+
+function onWindowResizeThree(){
+  if (!renderer) return;
+  const w = threeCard.clientWidth, h = threeCard.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+}
+
+function buildSolidMesh(f, a, b, samples){
+  // We'll build by sampling curve in (x,y) and using LatheGeometry (revolve around y-axis)
+  // Strategy:
+  // - If rotating around x-axis: swap coords to produce profile for lathe
+  // - If rotating around y-axis: use x as radius and y as height (we will lathe around y)
+  const points = [];
+  const n = Math.max(8, samples);
+  for (let i = 0; i < n; i++){
+    const t = i / (n-1);
+    const x = a + (b - a) * t;
+    const y = f(x);
+    if (!isFinite(y)) { points.push(new THREE.Vector2(0, 0)); continue; }
+    if (axis === 'x'){
+      // For lathe we want points in (radius, height) pairs where height increases with x
+      // radius = y (distance from x-axis), height = x
+      points.push(new THREE.Vector2(Math.abs(y), x));
+    } else {
+      // rotation around y: radius = x, height = y
+      points.push(new THREE.Vector2(Math.abs(x), y));
+    }
+  }
+
+  // create geometry by rotating profile
+  const segments = 160;
+  const geom = new THREE.LatheGeometry(points, segments);
+  // compute bounding normals
+  geom.computeVertexNormals();
+
+  const mat = new THREE.MeshStandardMaterial({
+    color: 0x54c0ff,
+    metalness: 0.03,
+    roughness: 0.4,
+    transparent: true,
+    opacity: 0.96,
+    side: THREE.DoubleSide,
+  });
+
+  const mesh = new THREE.Mesh(geom, mat);
+  // center to nicer view
+  // small transform: if rotating around x, lathe used height as x; rotate so x is horizontal
+  if (axis === 'x'){
+    mesh.rotation.z = -Math.PI/2; // rotate to align with x-axis as horizontal
+  } else {
+    // rotate slightly for perspective
+  }
+  // add slight wireframe edge
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geom), new THREE.LineBasicMaterial({ color: 0x153d4f, linewidth: 1, transparent:true, opacity:0.06 }));
+  const group = new THREE.Group();
+  group.add(mesh);
+  group.add(edges);
+
+  return group;
+}
+
+function animateThree(){
+  if (!renderer) return;
+  requestAnimationFrame(animateThree);
+  if (solidMesh && spinning) {
+    solidMesh.rotation.y += 0.006;
+  }
+  renderer.render(scene, camera);
+}
+
+/* ---------------------------
+   Draw everything
+   --------------------------- */
+function drawAll(){
+  // prepare canvas size
+  fitCanvas();
+  const key = fnSelect.value;
+  const preset = presets[key];
+  const f = preset.f;
+
+  let a = parseFloat(aInput.value);
+  let b = parseFloat(bInput.value);
+  if (!isFinite(a)) a = 0;
+  if (!isFinite(b)) b = a + 1;
+  // if a > b, swap
+  if (a > b) { const t=a; a=b; b=t; aInput.value=a; bInput.value=b; }
+
+  const samples = Math.max(40, parseInt(resRange.value));
+  sampleText.innerText = samples;
+
+  // draw 2D curve
+  const pts = drawCurve(f, a, b, Math.min(800, samples));
+
+  // compute volume
+  const vol = computeVolume(f, a, b, samples);
+  const volText = vol ? (Math.abs(vol) < 1e-6 ? "≈ 0" : vol.toFixed(6)) : "—";
+  volumeText.innerText = volText + " (units³)";
+
+  intervalText.innerText = `[${a}, ${b}]`;
+  fnText.innerText = preset.label;
+  curveLabel.innerText = preset.label;
+
+  // 3D build if visible
+  if (threeCard.style.display !== 'none'){
+    // build mesh and replace
+    if (!renderer) initThree();
+    const newMesh = buildSolidMesh(f, a, b, Math.max(48, samples/2 | 0));
+    // remove previous
+    if (solidMesh) scene.remove(solidMesh);
+    solidMesh = newMesh;
+    scene.add(solidMesh);
+    // center & scale camera to fit
+    // compute bounding box
+    const box = new THREE.Box3().setFromObject(solidMesh);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    // move camera to fit
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const fov = camera.fov * (Math.PI/180);
+    const dist = Math.abs(maxDim / (2 * Math.tan(fov/2))) * 1.6;
+    camera.position.set(center.x + dist, center.y + dist*0.6, center.z + dist*0.6);
+    camera.lookAt(center);
+  }
+}
+
+/* ---------------------------
+   Button interactions
+   --------------------------- */
+let threeVisible = false;
+toggle3D.addEventListener('click', () => {
+  threeVisible = !threeVisible;
+  threeCard.style.display = threeVisible ? 'block' : 'none';
+  toggle3D.innerText = threeVisible ? 'Disable 3D View' : 'Enable 3D View';
+  // initialize three when turning on
+  if (threeVisible && !renderer) {
+    initThree();
+    animateThree();
+  }
+  drawAll();
+});
+
+spinToggle.addEventListener('click', () => {
+  spinning = !spinning;
+  spinToggle.innerText = spinning ? 'Pause Spin' : 'Resume Spin';
+  spinToggle.style.background = spinning ? 'linear-gradient(180deg,#333,#111)' : 'linear-gradient(180deg,#06314a, #072a3b)';
+});
+
+/* ---------------------------
+   Start
+   --------------------------- */
+(function init(){
+  // fill presets dropdown with labels (keeps keys)
+  fnSelect.innerHTML = Object.keys(presets).map(k => `<option value="${k}">${presets[k].label}</option>`).join('');
+  updateControlsFromPreset();
+  fitCanvas();
+  drawAll();
+})();
+
+const fullscreenBtn = document.getElementById('fullscreen3D');
+
+fullscreenBtn.addEventListener('click', () => {
+  const threeRoot = document.getElementById('three-root');
+  
+  if (!document.fullscreenElement) {
+    // Enter fullscreen
+    if (threeRoot.requestFullscreen) {
+      threeRoot.requestFullscreen();
+    } else if (threeRoot.webkitRequestFullscreen) { // Safari
+      threeRoot.webkitRequestFullscreen();
+    }
+  } else {
+    // Exit fullscreen
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+  }
+});
+
+// When fullscreen changes, update button text and resize Three.js
+function handleFullscreenChange() {
+  if (document.fullscreenElement) {
+    fullscreenBtn.textContent = '✖ Exit';
+  } else {
+    fullscreenBtn.textContent = '⛶ Fullscreen';
+  }
+  onWindowResizeThree();
+}
+
+document.addEventListener('fullscreenchange', handleFullscreenChange);
+document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+
+</script>
+
+<!-- New Version Popup -->
+<div id="versionPopup">
+  <div class="popup-content">
+    <span class="close-btn">&times;</span>
+    <h2>New Version Available 🎉</h2>
+    <p>We’ve just released <strong>v2.0</strong> with improved features and performance.<br>
+       You can try the new version now or continue with this one.</p>
+    <a href="index.html" id="newVersionLink" class="popup-btn" target="_blank">Click Here</a>
+  </div>
+</div>
+
+
+<footer>
+  <div class="footer-container">
+    <div class="footer-section">
+      <h4>About</h4>
+      <p>A tool to visualize solids of revolution in 2D & 3D using modern web tech.</p>
+    </div>
+    <div class="footer-section">
+      <h4>Contact</h4>
+      <p>Email: <a href="mailto:you@example.com">semila.info@gmail.com</a></p>
+      <p>GitHub: <a href="https://github.com/SemilAamajith11" target="_blank">SemilAamajith11</a></p>
+    </div>
+    <div class="footer-section">
+      <h4>Info</h4>
+      <p>Version: v1.0</p>
+      <p>© <span id="year"></span> Semila Amajith</p>
+      <p>Other Projects: <a href="calculator.html" target="_blank">Scientific Calculator</a></p>
+      <p><strong>Time:</strong> <span id="dateTime"></span></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.getElementById("year").textContent = new Date().getFullYear();
+
+function updateDateTime() {
+  document.getElementById("dateTime").textContent =
+    new Date().toLocaleString();
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
+</script>
+
+<script>
+window.addEventListener("load", function() {
+  // Show popup after loading screen disappears
+  setTimeout(() => {
+    document.getElementById("versionPopup").style.display = "flex";
+  }, 600); // slight delay after load
+
+  // Close button
+  document.querySelector("#versionPopup .close-btn").onclick = function() {
+    document.getElementById("versionPopup").style.display = "none";
+  };
+
+  // Optional: Close when clicking outside content
+  document.getElementById("versionPopup").onclick = function(e) {
+    if (e.target.id === "versionPopup") {
+      document.getElementById("versionPopup").style.display = "none";
+    }
+  };
+});
+</script>
+
+</body>
+</html>
